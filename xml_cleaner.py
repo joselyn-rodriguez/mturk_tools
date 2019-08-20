@@ -41,40 +41,46 @@ def get_hit_ids():
         all_hits.append(hit)
     return all_hits
 
-# returns a list of answers
+# returns a list of answer dictionaries containing assignment ids, hit_ids, worker ids, and question xml data
 def get_questionnaire_data(hit_list):
-    answer_list = []
+    
+    all_answer_lists = []
+    
     for hit in hit_list:
+        answer_list = {}
+
         response = mturk.list_assignments_for_hit(
             HITId= hit,
             AssignmentStatuses=['Submitted'])
-        print(response)
         for answer in response['Assignments']:
-            print(answer)
-            answer_list.append( { answer['AssignmentId'] : answer['Answer'] })
+            answer_list["assignment_id"] = answer['AssignmentId'] 
+            answer_list["hit_id"] = answer["HITId"]
+            answer_list["worker_id"] = answer["WorkerId"]
+            answer_list["quest_xml"] = answer["Answer"]
+        all_answer_lists.append(answer_list)
         
     print("here")
-    print(answer_list)
-    return answer_list
+    print(all_answer_lists)
+    return all_answer_lists
 
+def parse_question_data(answer_lists):
 
-def parse_question_data(question_dictionary):
-    for pair in question_dictionary:
-        ans_id = pair.keys() #it is keys but there is only one
-        questionnaire_raw = pair.values() #once again, only one
+    for answer in answer_lists:
+        questionnaire_raw = answer['quest_xml']
     
     root = ET.fromstring(questionnaire_raw)
+    print(root)
 
     questionnaire = []
-    #creating a dictionary for the question and answer data
-    questionnaire_data = {}
 
     for node in root.findall('{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}Answer'):
         question = node.find('{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}QuestionIdentifier')
         answer = node.find('{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}FreeText')
-        questionnaire_data[question.text] = answer.text
-    questionnaire.append(questionnaire_data)
-    questionnaire.append("assignmentId" + "," + ans_id)
+        print(answer.text)
+        questionnaire[question.text] = answer.text
+    #questionnaire.append(questionnaire)
+    #questionnaire.append(questionnaire_raw['assignment_id'])
+    #questionnaire.append(questionnaire_raw['worker_id'])
     return questionnaire
 
 
@@ -86,8 +92,10 @@ def save_to_csv(questionnaire, filename):
 
 def main():
     hit_ids = get_hit_ids()
-    print(hit_ids)
-    get_questionnaire_data(hit_ids)
+    answer_lists = get_questionnaire_data(hit_ids)
+    questionnaire = parse_question_data(answer_lists)
+    save_to_csv(questionnaire, 'test_file.csv')
+    
 
 
 if __name__ == "__main__":

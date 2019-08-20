@@ -55,7 +55,7 @@ def delete_qual_type(qual_query):
     )
     return response
 
-# delete HITs
+# delete single HIT
     
 def delete_HIT(HIT_id):
     response = mturk.delete_hit(
@@ -63,7 +63,31 @@ def delete_HIT(HIT_id):
     )
     return response
 
+# WILL delete ALL HITS use with CAUTION
+def delete_all_HITs():
+    available_hits = mturk.list_reviewable_hits(
+        Status='Reviewable',
+        MaxResults = 100
+    )
+    available_hits = available_hits['HITs']
+    deleted_hits = []
     
+    for hit in available_hits:
+        hit = hit['HITId']
+        deleted_hits.append(hit)
+        hit = mturk.delete_hit(HITId=hit)
+    # will show you which hits you deleted, they CANNOT be restored
+    print(deleted_hits)
+    return
+
+
+def main():
+    #delete_all_HITs()
+
+if __name__ == "__main__":
+    main()
+
+
 
 
 
