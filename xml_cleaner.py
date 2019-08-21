@@ -58,7 +58,6 @@ def get_questionnaire_data(hit_list):
                 answer_list["quest_xml"] = answer["Answer"]
         if len(answer_list) > 0:
             all_answer_lists.append(answer_list)
-    print(all_answer_lists)
     return all_answer_lists
 
 def parse_question_data(answer_lists):
@@ -88,7 +87,6 @@ def parse_question_data(answer_lists):
 
             answer = node.find('{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}FreeText')
             questionnaire['answer'].append(answer.text)
-    print(questionnaire)
     return questionnaire
 
 
