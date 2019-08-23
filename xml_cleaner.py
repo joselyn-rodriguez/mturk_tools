@@ -48,8 +48,7 @@ def get_questionnaire_data(hit_list):
         answer_list = {}
 
         response = mturk.list_assignments_for_hit(
-            HITId= hit,
-            AssignmentStatuses=['Submitted'])
+            HITId= hit)
         for answer in response['Assignments']:
             if response['Assignments']:
                 answer_list["assignment_id"] = answer['AssignmentId'] 
@@ -87,17 +86,22 @@ def parse_question_data(answer_lists):
 
             answer = node.find('{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}FreeText')
             questionnaire['answer'].append(answer.text)
+    print(questionnaire)
     return questionnaire
 
 
 def save_to_csv(questionnaire, filename):
-    data_frame = pd.DataFrame(data= questionnaire)
+    
+    data_frame = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in questionnaire.items() ]))
+    
     csv = data_frame.to_csv(filename, header=True)
+    
     return csv
 
 
 def main():
     hit_ids = get_hit_ids()
+    print(hit_ids)
     answer_lists = get_questionnaire_data(hit_ids)
     questionnaire = parse_question_data(answer_lists)
     save_to_csv(questionnaire, 'test_file.csv')
